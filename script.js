@@ -1,15 +1,26 @@
+const dummyContent = [
+    { type: 'text', content: 'the quick brown fox jumps over the lazy dog' },
+    { type: 'text', content: 'somewhere over the rainbow' },
+    { type: 'text', content: 'a watched pot never boils' },
+    { type: 'text', content: 'time flies when you are having fun' },
+    { type: 'text', content: 'the pen is mightier than the sword' },
+    { type: 'photo', content: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23ffffff" stroke="%23000000" width="200" height="150"/%3E%3Cline x1="0" y1="0" x2="200" y2="150" stroke="%23000000"/%3E%3Cline x1="200" y1="0" x2="0" y2="150" stroke="%23000000"/%3E%3C/svg%3E' },
+    { type: 'text', content: 'silence is golden' },
+    { type: 'photo', content: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="180" height="180"%3E%3Crect fill="%23ffffff" stroke="%23000000" width="180" height="180"/%3E%3Ccircle cx="90" cy="90" r="60" fill="none" stroke="%23000000"/%3E%3C/svg%3E' },
+    { type: 'text', content: 'all that glitters is not gold' },
+    { type: 'photo', content: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="200"%3E%3Crect fill="%23ffffff" stroke="%23000000" width="160" height="200"/%3E%3Cpath d="M 80 20 L 140 100 L 80 180 L 20 100 Z" fill="none" stroke="%23000000"/%3E%3C/svg%3E' },
+];
+
 let contentItems = [];
+let focusedItem = null;
 
 function getRandomPosition() {
-    const container = document.getElementById('content-container');
-    const containerRect = container.getBoundingClientRect();
-
-    const maxX = Math.max(300, containerRect.width - 320);
-    const maxY = Math.max(300, containerRect.height - 300);
+    const maxX = window.innerWidth - 320;
+    const maxY = window.innerHeight - 300;
 
     return {
-        top: Math.random() * maxY,
-        left: Math.random() * maxX
+        x: Math.random() * Math.max(0, maxX),
+        y: Math.random() * Math.max(0, maxY)
     };
 }
 
@@ -19,17 +30,14 @@ function createContentItem(type, content) {
     item.className = `content-item ${type}-item`;
 
     const pos = getRandomPosition();
-    item.style.top = pos.top + 'px';
-    item.style.left = pos.left + 'px';
+    item.dataset.baseX = pos.x;
+    item.dataset.baseY = pos.y;
+    item.dataset.velocityX = (Math.random() - 0.5) * 0.3;
+    item.dataset.velocityY = (Math.random() - 0.5) * 0.3;
+    item.dataset.wigglePhase = Math.random() * Math.PI * 2;
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'close-btn';
-    closeBtn.innerHTML = '×';
-    closeBtn.onclick = function() {
-        item.remove();
-        contentItems = contentItems.filter(i => i !== item);
-    };
-    item.appendChild(closeBtn);
+    item.style.left = pos.x + 'px';
+    item.style.top = pos.y + 'px';
 
     switch(type) {
         case 'text':
@@ -42,151 +50,81 @@ function createContentItem(type, content) {
             const img = document.createElement('img');
             img.src = content;
             img.alt = '';
-            img.onerror = function() {
-                item.innerHTML = '<p>image failed to load</p>';
-            };
             item.appendChild(img);
-            break;
-
-        case 'audio':
-            const audioLabel = document.createElement('div');
-            audioLabel.className = 'audio-label';
-            audioLabel.textContent = 'audio';
-            const audio = document.createElement('audio');
-            audio.controls = true;
-            audio.src = content;
-            item.appendChild(audioLabel);
-            item.appendChild(audio);
-            break;
-
-        case 'video':
-            const videoLabel = document.createElement('div');
-            videoLabel.className = 'video-label';
-            videoLabel.textContent = 'video';
-            const video = document.createElement('video');
-            video.controls = true;
-            video.src = content;
-            item.appendChild(videoLabel);
-            item.appendChild(video);
             break;
     }
 
-    makeDraggable(item);
+    item.addEventListener('mouseenter', function() {
+        focusedItem = item;
+        item.classList.add('focused');
+    });
+
+    item.addEventListener('mouseleave', function() {
+        if (focusedItem === item) {
+            focusedItem = null;
+            item.classList.remove('focused');
+        }
+    });
+
     container.appendChild(item);
     contentItems.push(item);
 }
 
-function makeDraggable(element) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+function animate() {
+    contentItems.forEach(item => {
+        if (item === focusedItem) return;
 
-    element.onmousedown = dragMouseDown;
+        let baseX = parseFloat(item.dataset.baseX);
+        let baseY = parseFloat(item.dataset.baseY);
+        let velocityX = parseFloat(item.dataset.velocityX);
+        let velocityY = parseFloat(item.dataset.velocityY);
+        let wigglePhase = parseFloat(item.dataset.wigglePhase);
 
-    function dragMouseDown(e) {
-        if (e.target.className === 'close-btn') return;
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-        element.style.zIndex = 1000;
-    }
+        // Update base position
+        baseX += velocityX;
+        baseY += velocityY;
 
-    function elementDrag(e) {
-        e.preventDefault();
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        element.style.top = (element.offsetTop - pos2) + "px";
-        element.style.left = (element.offsetLeft - pos1) + "px";
-    }
+        // Bounce off edges
+        const maxX = window.innerWidth - item.offsetWidth;
+        const maxY = window.innerHeight - item.offsetHeight;
 
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-        element.style.zIndex = 'auto';
-    }
-}
-
-function addText() {
-    const input = document.getElementById('text-input');
-    if (input.value.trim()) {
-        createContentItem('text', input.value);
-        input.value = '';
-    }
-}
-
-function addPhoto() {
-    const input = document.getElementById('photo-input');
-    if (input.value.trim()) {
-        createContentItem('photo', input.value);
-        input.value = '';
-    }
-}
-
-function addAudio() {
-    const input = document.getElementById('audio-input');
-    if (input.value.trim()) {
-        createContentItem('audio', input.value);
-        input.value = '';
-    }
-}
-
-function addVideo() {
-    const input = document.getElementById('video-input');
-    if (input.value.trim()) {
-        createContentItem('video', input.value);
-        input.value = '';
-    }
-}
-
-function clearAll() {
-    const container = document.getElementById('content-container');
-    container.innerHTML = '';
-    contentItems = [];
-}
-
-document.getElementById('photo-file').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            createContentItem('photo', event.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
-    this.value = '';
-});
-
-document.getElementById('audio-file').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('audio/')) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            createContentItem('audio', event.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
-    this.value = '';
-});
-
-document.getElementById('video-file').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('video/')) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            createContentItem('video', event.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
-    this.value = '';
-});
-
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        const textInput = document.getElementById('text-input');
-        if (textInput === document.activeElement && textInput.value.trim()) {
-            addText();
+        if (baseX <= 0 || baseX >= maxX) {
+            velocityX *= -1;
+            baseX = Math.max(0, Math.min(maxX, baseX));
         }
-    }
+        if (baseY <= 0 || baseY >= maxY) {
+            velocityY *= -1;
+            baseY = Math.max(0, Math.min(maxY, baseY));
+        }
+
+        // Wiggle effect
+        wigglePhase += 0.05;
+        const wiggleX = Math.sin(wigglePhase) * 3;
+        const wiggleY = Math.cos(wigglePhase * 1.3) * 3;
+        const wiggleRotate = Math.sin(wigglePhase * 0.7) * 2;
+
+        // Apply position and wiggle
+        item.style.left = (baseX + wiggleX) + 'px';
+        item.style.top = (baseY + wiggleY) + 'px';
+        item.style.transform = `rotate(${wiggleRotate}deg)`;
+
+        // Update dataset
+        item.dataset.baseX = baseX;
+        item.dataset.baseY = baseY;
+        item.dataset.velocityX = velocityX;
+        item.dataset.velocityY = velocityY;
+        item.dataset.wigglePhase = wigglePhase;
+    });
+
+    requestAnimationFrame(animate);
+}
+
+// Initialize dummy content on page load
+window.addEventListener('DOMContentLoaded', function() {
+    dummyContent.forEach(item => {
+        createContentItem(item.type, item.content);
+    });
+
+    // Start animation loop
+    animate();
 });
