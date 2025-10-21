@@ -1,54 +1,14 @@
 [
   {
     "type": "text",
-    "content": "the quick brown fox jumps over the lazy dog"
+    "content": "hello i am maya"
   },
   {
     "type": "text",
-    "content": "somewhere over the rainbow"
-  },
-  {
-    "type": "photo",
-    "content": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='150'%3E%3Crect fill='%23ffffff' stroke='%23000000' width='200' height='150'/%3E%3Cline x1='0' y1='0' x2='200' y2='150' stroke='%23000000'/%3E%3Cline x1='200' y1='0' x2='0' y2='150' stroke='%23000000'/%3E%3C/svg%3E"
+    "content": "learning to be present to my own grief is the hardest thing i've ever done"
   },
   {
     "type": "text",
-    "content": "a watched pot never boils"
-  },
-  {
-    "type": "photo",
-    "content": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect fill='%23ffffff' stroke='%23000000' width='180' height='180'/%3E%3Ccircle cx='90' cy='90' r='60' fill='none' stroke='%23000000'/%3E%3C/svg%3E"
-  },
-  {
-    "type": "text",
-    "content": "time flies when you are having fun"
-  },
-  {
-    "type": "video",
-    "content": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-  },
-  {
-    "type": "photo",
-    "content": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='200'%3E%3Crect fill='%23ffffff' stroke='%23000000' width='160' height='200'/%3E%3Cpath d='M 80 20 L 140 100 L 80 180 L 20 100 Z' fill='none' stroke='%23000000'/%3E%3C/svg%3E"
-  },
-  {
-    "type": "text",
-    "content": "the pen is mightier than the sword"
-  },
-  {
-    "type": "text",
-    "content": "silence is golden"
-  },
-  {
-    "type": "photo",
-    "content": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect fill='%23ffffff' stroke='%23000000' width='150' height='150'/%3E%3Crect x='50' y='50' width='50' height='50' fill='none' stroke='%23000000'/%3E%3C/svg%3E"
-  },
-  {
-    "type": "text",
-    "content": "all that glitters is not gold"
-  },
-  {
-    "type": "video",
-    "content": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    "content": "should i start an advice column even tho i am strictly against giving anyone any advice"
   }
 ]
