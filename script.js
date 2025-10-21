@@ -1,4 +1,4 @@
-// Visitor counter with random number
+// Visitor counter
 let visitorCount = Math.floor(Math.random() * 9999) + 1000;
 document.getElementById('visitor-count').textContent = visitorCount;
 
@@ -10,9 +10,8 @@ function getRandomPosition() {
     const container = document.getElementById('content-container');
     const containerRect = container.getBoundingClientRect();
 
-    // Generate positions that keep items within viewable area
-    const maxX = Math.max(800, containerRect.width - 350);
-    const maxY = Math.max(600, containerRect.height - 350);
+    const maxX = Math.max(400, containerRect.width - 300);
+    const maxY = Math.max(400, containerRect.height - 300);
 
     return {
         top: Math.random() * maxY,
@@ -20,37 +19,24 @@ function getRandomPosition() {
     };
 }
 
-// Random rotation
+// Slight random rotation for variety
 function getRandomRotation() {
-    return (Math.random() * 20 - 10); // -10 to 10 degrees
+    return (Math.random() * 4 - 2); // -2 to 2 degrees
 }
 
-// Random size scale
-function getRandomScale() {
-    return 0.8 + Math.random() * 0.6; // 0.8 to 1.4
-}
-
-// Random color for borders
-function getRandomColor() {
-    const colors = ['#ff00ff', '#00ffff', '#ffff00', '#00ff00', '#ff0080', '#0080ff'];
-    return colors[Math.floor(Math.random() * colors.length)];
-}
-
-// Create a draggable content item
+// Create a content item
 function createContentItem(type, content) {
     const container = document.getElementById('content-container');
     const item = document.createElement('div');
     item.className = `content-item ${type}-item`;
 
-    // Apply random transformations
+    // Apply random positioning
     const pos = getRandomPosition();
     const rotation = getRandomRotation();
-    const scale = getRandomScale();
 
     item.style.top = pos.top + 'px';
     item.style.left = pos.left + 'px';
-    item.style.transform = `rotate(${rotation}deg) scale(${scale})`;
-    item.style.borderColor = getRandomColor();
+    item.style.transform = `rotate(${rotation}deg)`;
 
     // Add close button
     const closeBtn = document.createElement('button');
@@ -73,9 +59,9 @@ function createContentItem(type, content) {
         case 'photo':
             const img = document.createElement('img');
             img.src = content;
-            img.alt = 'User photo';
+            img.alt = 'Image';
             img.onerror = function() {
-                item.innerHTML = '<p style="color: #ff0000;">❌ Image failed to load</p>';
+                item.innerHTML = '<p style="color: #999;">Image failed to load</p>';
             };
             item.appendChild(img);
             break;
@@ -83,7 +69,7 @@ function createContentItem(type, content) {
         case 'audio':
             const audioLabel = document.createElement('div');
             audioLabel.className = 'audio-label';
-            audioLabel.textContent = '🎵 Audio Player';
+            audioLabel.textContent = 'audio';
             const audio = document.createElement('audio');
             audio.controls = true;
             audio.src = content;
@@ -94,7 +80,7 @@ function createContentItem(type, content) {
         case 'video':
             const videoLabel = document.createElement('div');
             videoLabel.className = 'video-label';
-            videoLabel.textContent = '📺 Video Player';
+            videoLabel.textContent = 'video';
             const video = document.createElement('video');
             video.controls = true;
             video.src = content;
@@ -110,17 +96,12 @@ function createContentItem(type, content) {
     container.appendChild(item);
     contentItems.push(item);
 
-    // Add entrance animation
+    // Fade in animation
     item.style.opacity = '0';
     setTimeout(() => {
         item.style.transition = 'opacity 0.5s';
         item.style.opacity = '1';
     }, 10);
-
-    // Randomly shuffle positions every few seconds
-    if (Math.random() > 0.7) {
-        setTimeout(() => randomizePosition(item), 3000 + Math.random() * 5000);
-    }
 }
 
 // Make elements draggable
@@ -139,7 +120,6 @@ function makeDraggable(element) {
         document.onmouseup = closeDragElement;
         document.onmousemove = elementDrag;
 
-        // Bring to front
         element.style.zIndex = 1000;
     }
 
@@ -157,24 +137,6 @@ function makeDraggable(element) {
         document.onmouseup = null;
         document.onmousemove = null;
         element.style.zIndex = 'auto';
-    }
-}
-
-// Randomly move an item to a new position
-function randomizePosition(item) {
-    if (!document.body.contains(item)) return;
-
-    const pos = getRandomPosition();
-    const rotation = getRandomRotation();
-
-    item.style.transition = 'all 2s ease-in-out';
-    item.style.top = pos.top + 'px';
-    item.style.left = pos.left + 'px';
-    item.style.transform = `rotate(${rotation}deg)`;
-
-    // Schedule next randomization
-    if (Math.random() > 0.5) {
-        setTimeout(() => randomizePosition(item), 5000 + Math.random() * 10000);
     }
 }
 
@@ -224,6 +186,7 @@ document.getElementById('photo-file').addEventListener('change', function(e) {
         };
         reader.readAsDataURL(file);
     }
+    this.value = '';
 });
 
 document.getElementById('audio-file').addEventListener('change', function(e) {
@@ -235,6 +198,7 @@ document.getElementById('audio-file').addEventListener('change', function(e) {
         };
         reader.readAsDataURL(file);
     }
+    this.value = '';
 });
 
 document.getElementById('video-file').addEventListener('change', function(e) {
@@ -246,6 +210,7 @@ document.getElementById('video-file').addEventListener('change', function(e) {
         };
         reader.readAsDataURL(file);
     }
+    this.value = '';
 });
 
 // Clear all content
@@ -255,13 +220,7 @@ function clearAll() {
     contentItems = [];
 }
 
-// Add some random glitch effects
-setInterval(() => {
-    const h1 = document.querySelector('h1');
-    h1.style.color = getRandomColor();
-}, 3000);
-
-// Easter egg: click counter to increment it
+// Click counter to increment
 document.getElementById('visitor-count').addEventListener('click', function() {
     visitorCount++;
     this.textContent = visitorCount;
@@ -277,18 +236,3 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
-
-// Random chaos mode - occasionally shuffle all items
-function chaosMode() {
-    if (contentItems.length > 0 && Math.random() > 0.7) {
-        contentItems.forEach(item => {
-            randomizePosition(item);
-        });
-    }
-}
-
-// Run chaos mode randomly
-setInterval(chaosMode, 15000);
-
-console.log('%c🌈 WELCOME TO THE CYBER ZONE 🌈', 'font-size: 20px; color: #ff00ff; background: #00ffff; padding: 10px;');
-console.log('%cYou found the secret console message! You are truly a 90s web master!', 'color: #00ff00;');
