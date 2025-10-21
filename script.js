@@ -13,6 +13,7 @@ const dummyContent = [
 
 let contentItems = [];
 let focusedItem = null;
+let clickedItem = null;
 let animationRunning = false;
 
 function getRandomPosition() {
@@ -23,6 +24,14 @@ function getRandomPosition() {
         x: Math.random() * Math.max(0, maxX),
         y: Math.random() * Math.max(0, maxY)
     };
+}
+
+function centerItem(item) {
+    const centerX = (window.innerWidth / 2) - (item.offsetWidth / 2);
+    const centerY = (window.innerHeight / 2) - (item.offsetHeight / 2);
+
+    item.style.left = centerX + 'px';
+    item.style.top = centerY + 'px';
 }
 
 function createContentItem(type, content) {
@@ -52,14 +61,46 @@ function createContentItem(type, content) {
     }
 
     item.addEventListener('mouseenter', function() {
-        focusedItem = item;
-        item.classList.add('focused');
+        if (clickedItem !== item) {
+            focusedItem = item;
+            item.classList.add('focused');
+        }
     });
 
     item.addEventListener('mouseleave', function() {
         if (focusedItem === item) {
             focusedItem = null;
             item.classList.remove('focused');
+        }
+    });
+
+    item.addEventListener('click', function(e) {
+        e.stopPropagation();
+
+        if (clickedItem === item) {
+            // Unfocus if clicking the same item
+            item.classList.remove('clicked');
+            clickedItem = null;
+
+            // Return to original position
+            var baseX = parseFloat(item.getAttribute('data-base-x'));
+            var baseY = parseFloat(item.getAttribute('data-base-y'));
+            item.style.left = baseX + 'px';
+            item.style.top = baseY + 'px';
+        } else {
+            // Unfocus previous item if any
+            if (clickedItem) {
+                clickedItem.classList.remove('clicked');
+                var prevBaseX = parseFloat(clickedItem.getAttribute('data-base-x'));
+                var prevBaseY = parseFloat(clickedItem.getAttribute('data-base-y'));
+                clickedItem.style.left = prevBaseX + 'px';
+                clickedItem.style.top = prevBaseY + 'px';
+            }
+
+            // Focus new item
+            clickedItem = item;
+            item.classList.add('clicked');
+            centerItem(item);
         }
     });
 
@@ -72,7 +113,7 @@ function animate() {
 
     for (let i = 0; i < contentItems.length; i++) {
         const item = contentItems[i];
-        if (item === focusedItem) continue;
+        if (item === focusedItem || item === clickedItem) continue;
 
         let baseX = parseFloat(item.getAttribute('data-base-x'));
         let baseY = parseFloat(item.getAttribute('data-base-y'));
@@ -120,6 +161,18 @@ function animate() {
 
     requestAnimationFrame(animate);
 }
+
+// Click outside to unfocus
+document.addEventListener('click', function(e) {
+    if (clickedItem && e.target.closest('.content-item') === null) {
+        clickedItem.classList.remove('clicked');
+        var baseX = parseFloat(clickedItem.getAttribute('data-base-x'));
+        var baseY = parseFloat(clickedItem.getAttribute('data-base-y'));
+        clickedItem.style.left = baseX + 'px';
+        clickedItem.style.top = baseY + 'px';
+        clickedItem = null;
+    }
+});
 
 // Initialize dummy content on page load
 window.addEventListener('DOMContentLoaded', function() {

@@ -29,17 +29,27 @@ body {
     border: 1px solid #000000;
     padding: 12px;
     cursor: pointer;
-    transition: transform 0.1s ease-out;
+    transition: all 0.3s ease-out;
 }
 
 .content-item.focused {
     z-index: 1000;
 }
 
+.content-item.clicked {
+    z-index: 2000;
+    transform: scale(1.8) rotate(0deg) !important;
+    max-width: 500px;
+}
+
 .text-item {
     color: #000000;
     font-size: 12px;
     line-height: 1.4;
+}
+
+.text-item.clicked {
+    font-size: 16px;
 }
 
 .photo-item {
