@@ -61,3 +61,18 @@ body {
     height: auto;
     display: block;
 }
+
+.video-item {
+    padding: 8px;
+    max-width: 400px;
+}
+
+.video-item video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-item.clicked {
+    max-width: 600px;
+}

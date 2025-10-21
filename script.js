@@ -1,16 +1,3 @@
-const dummyContent = [
-    { type: 'text', content: 'the quick brown fox jumps over the lazy dog' },
-    { type: 'text', content: 'somewhere over the rainbow' },
-    { type: 'text', content: 'a watched pot never boils' },
-    { type: 'text', content: 'time flies when you are having fun' },
-    { type: 'text', content: 'the pen is mightier than the sword' },
-    { type: 'photo', content: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23ffffff" stroke="%23000000" width="200" height="150"/%3E%3Cline x1="0" y1="0" x2="200" y2="150" stroke="%23000000"/%3E%3Cline x1="200" y1="0" x2="0" y2="150" stroke="%23000000"/%3E%3C/svg%3E' },
-    { type: 'text', content: 'silence is golden' },
-    { type: 'photo', content: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="180" height="180"%3E%3Crect fill="%23ffffff" stroke="%23000000" width="180" height="180"/%3E%3Ccircle cx="90" cy="90" r="60" fill="none" stroke="%23000000"/%3E%3C/svg%3E' },
-    { type: 'text', content: 'all that glitters is not gold' },
-    { type: 'photo', content: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="200"%3E%3Crect fill="%23ffffff" stroke="%23000000" width="160" height="200"/%3E%3Cpath d="M 80 20 L 140 100 L 80 180 L 20 100 Z" fill="none" stroke="%23000000"/%3E%3C/svg%3E' },
-];
-
 let contentItems = [];
 let focusedItem = null;
 let clickedItem = null;
@@ -58,6 +45,12 @@ function createContentItem(type, content) {
         img.src = content;
         img.alt = '';
         item.appendChild(img);
+    } else if (type === 'video') {
+        const video = document.createElement('video');
+        video.src = content;
+        video.controls = true;
+        video.style.maxWidth = '100%';
+        item.appendChild(video);
     }
 
     item.addEventListener('mouseenter', function() {
@@ -174,15 +167,32 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Initialize dummy content on page load
-window.addEventListener('DOMContentLoaded', function() {
-    dummyContent.forEach(function(item) {
-        createContentItem(item.type, item.content);
-    });
+// Load posts from JSON file
+function loadPosts() {
+    fetch('posts.json')
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Failed to load posts');
+            }
+            return response.json();
+        })
+        .then(function(posts) {
+            posts.forEach(function(post) {
+                createContentItem(post.type, post.content);
+            });
 
-    // Wait for next frame to ensure elements are rendered
-    setTimeout(function() {
-        animationRunning = true;
-        animate();
-    }, 100);
+            // Wait for next frame to ensure elements are rendered
+            setTimeout(function() {
+                animationRunning = true;
+                animate();
+            }, 100);
+        })
+        .catch(function(error) {
+            console.error('Error loading posts:', error);
+        });
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+    loadPosts();
 });
