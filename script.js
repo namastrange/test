@@ -157,7 +157,7 @@ function animate() {
 
 // Click outside to unfocus
 document.addEventListener('click', function(e) {
-    if (clickedItem && e.target.closest('.content-item') === null) {
+    if (clickedItem && e.target.closest('.content-item') === null && e.target.id !== 'random-btn') {
         clickedItem.classList.remove('clicked');
         var baseX = parseFloat(clickedItem.getAttribute('data-base-x'));
         var baseY = parseFloat(clickedItem.getAttribute('data-base-y'));
@@ -192,7 +192,43 @@ function loadPosts() {
         });
 }
 
+// Random button functionality
+function selectRandomPost() {
+    if (contentItems.length === 0) return;
+
+    // Unfocus currently clicked item if any
+    if (clickedItem) {
+        clickedItem.classList.remove('clicked');
+        var prevBaseX = parseFloat(clickedItem.getAttribute('data-base-x'));
+        var prevBaseY = parseFloat(clickedItem.getAttribute('data-base-y'));
+        clickedItem.style.left = prevBaseX + 'px';
+        clickedItem.style.top = prevBaseY + 'px';
+    }
+
+    // Select random item
+    var randomIndex = Math.floor(Math.random() * contentItems.length);
+    var randomItem = contentItems[randomIndex];
+
+    // Focus the random item
+    clickedItem = randomItem;
+    randomItem.classList.add('clicked');
+
+    // Wait a moment for the item to resize, then center it
+    setTimeout(function() {
+        centerItem(randomItem);
+    }, 50);
+}
+
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', function() {
     loadPosts();
+
+    // Add random button event listener
+    var randomBtn = document.getElementById('random-btn');
+    if (randomBtn) {
+        randomBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            selectRandomPost();
+        });
+    }
 });
