@@ -11,6 +11,10 @@ body {
     line-height: 1.4;
     font-size: 14px;
     overflow: hidden;
+    /* Improve touch experience on mobile */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
 }
 
 .content-container {
@@ -30,6 +34,8 @@ body {
     padding: 12px;
     cursor: pointer;
     transition: all 0.3s ease-out;
+    /* Improve touch handling */
+    touch-action: manipulation;
 }
 
 .content-item.focused {
@@ -94,4 +100,121 @@ body {
 .random-btn:hover {
     background-color: #000000;
     color: #ffffff;
+}
+
+/* Tablet Styles (768px and below) */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 13px;
+    }
+
+    .content-item {
+        max-width: 250px;
+        padding: 10px;
+    }
+
+    .content-item.clicked {
+        transform: scale(1.5) rotate(0deg) !important;
+        max-width: 400px;
+    }
+
+    .text-item {
+        font-size: 11px;
+    }
+
+    .text-item.clicked {
+        font-size: 14px;
+    }
+
+    .video-item {
+        max-width: 300px;
+    }
+
+    .video-item.clicked {
+        max-width: 450px;
+    }
+
+    .random-btn {
+        bottom: 15px;
+        right: 15px;
+        padding: 10px 18px;
+        font-size: 13px;
+    }
+}
+
+/* Mobile Styles (480px and below) */
+@media screen and (max-width: 480px) {
+    body {
+        font-size: 12px;
+    }
+
+    .content-item {
+        max-width: 200px;
+        padding: 8px;
+    }
+
+    .content-item.clicked {
+        transform: scale(1.2) rotate(0deg) !important;
+        max-width: 90vw;
+    }
+
+    .text-item {
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .text-item.clicked {
+        font-size: 13px;
+    }
+
+    .photo-item {
+        padding: 6px;
+    }
+
+    .video-item {
+        max-width: 200px;
+        padding: 6px;
+    }
+
+    .video-item.clicked {
+        max-width: 90vw;
+    }
+
+    .random-btn {
+        bottom: 12px;
+        right: 12px;
+        padding: 10px 16px;
+        font-size: 12px;
+        /* Make button more touch-friendly */
+        min-width: 70px;
+        min-height: 40px;
+    }
+}
+
+/* Extra Small Mobile (360px and below) */
+@media screen and (max-width: 360px) {
+    .content-item {
+        max-width: 160px;
+        padding: 6px;
+    }
+
+    .content-item.clicked {
+        transform: scale(1.1) rotate(0deg) !important;
+        max-width: 95vw;
+    }
+
+    .text-item {
+        font-size: 10px;
+    }
+
+    .text-item.clicked {
+        font-size: 12px;
+    }
+
+    .random-btn {
+        bottom: 10px;
+        right: 10px;
+        padding: 8px 14px;
+        font-size: 11px;
+    }
 }

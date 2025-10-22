@@ -2,10 +2,13 @@ let contentItems = [];
 let focusedItem = null;
 let clickedItem = null;
 let animationRunning = false;
+let isMobile = window.innerWidth <= 768;
 
 function getRandomPosition() {
-    const maxX = window.innerWidth - 320;
-    const maxY = window.innerHeight - 300;
+    // Adjust padding based on screen size
+    const padding = isMobile ? 220 : 320;
+    const maxX = window.innerWidth - padding;
+    const maxY = window.innerHeight - padding;
 
     return {
         x: Math.random() * Math.max(0, maxX),
@@ -29,8 +32,11 @@ function createContentItem(type, content) {
     const pos = getRandomPosition();
     item.setAttribute('data-base-x', pos.x);
     item.setAttribute('data-base-y', pos.y);
-    item.setAttribute('data-velocity-x', (Math.random() - 0.5) * 0.3);
-    item.setAttribute('data-velocity-y', (Math.random() - 0.5) * 0.3);
+
+    // Reduce velocity on mobile for better performance
+    const velocity = isMobile ? 0.15 : 0.3;
+    item.setAttribute('data-velocity-x', (Math.random() - 0.5) * velocity);
+    item.setAttribute('data-velocity-y', (Math.random() - 0.5) * velocity);
     item.setAttribute('data-wiggle-phase', Math.random() * Math.PI * 2);
 
     item.style.left = pos.x + 'px';
@@ -67,8 +73,10 @@ function createContentItem(type, content) {
         }
     });
 
-    item.addEventListener('click', function(e) {
+    // Handle click/tap events
+    function handleItemClick(e) {
         e.stopPropagation();
+        e.preventDefault();
 
         if (clickedItem === item) {
             // Unfocus if clicking the same item
@@ -95,7 +103,14 @@ function createContentItem(type, content) {
             item.classList.add('clicked');
             centerItem(item);
         }
-    });
+    }
+
+    item.addEventListener('click', handleItemClick);
+
+    // Add touch support for mobile devices
+    if (isMobile) {
+        item.addEventListener('touchend', handleItemClick);
+    }
 
     container.appendChild(item);
     contentItems.push(item);
@@ -133,11 +148,15 @@ function animate() {
             baseY = Math.max(0, Math.min(maxY, baseY));
         }
 
-        // Wiggle effect
-        wigglePhase += 0.05;
-        const wiggleX = Math.sin(wigglePhase) * 3;
-        const wiggleY = Math.cos(wigglePhase * 1.3) * 3;
-        const wiggleRotate = Math.sin(wigglePhase * 0.7) * 2;
+        // Wiggle effect - reduced on mobile for better performance
+        const wiggleSpeed = isMobile ? 0.03 : 0.05;
+        const wiggleIntensity = isMobile ? 2 : 3;
+        const rotateIntensity = isMobile ? 1 : 2;
+
+        wigglePhase += wiggleSpeed;
+        const wiggleX = Math.sin(wigglePhase) * wiggleIntensity;
+        const wiggleY = Math.cos(wigglePhase * 1.3) * wiggleIntensity;
+        const wiggleRotate = Math.sin(wigglePhase * 0.7) * rotateIntensity;
 
         // Apply position and wiggle
         item.style.left = (baseX + wiggleX) + 'px';
@@ -155,8 +174,8 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// Click outside to unfocus
-document.addEventListener('click', function(e) {
+// Click/touch outside to unfocus
+function handleOutsideClick(e) {
     if (clickedItem && e.target.closest('.content-item') === null && e.target.id !== 'random-btn') {
         clickedItem.classList.remove('clicked');
         var baseX = parseFloat(clickedItem.getAttribute('data-base-x'));
@@ -165,7 +184,14 @@ document.addEventListener('click', function(e) {
         clickedItem.style.top = baseY + 'px';
         clickedItem = null;
     }
-});
+}
+
+document.addEventListener('click', handleOutsideClick);
+
+// Add touch support for mobile devices
+if (isMobile) {
+    document.addEventListener('touchend', handleOutsideClick);
+}
 
 // Load posts from JSON file
 function loadPosts() {
@@ -230,5 +256,19 @@ window.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             selectRandomPost();
         });
+
+        // Add touch support for random button on mobile
+        if (isMobile) {
+            randomBtn.addEventListener('touchend', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                selectRandomPost();
+            });
+        }
     }
+});
+
+// Update isMobile flag on window resize
+window.addEventListener('resize', function() {
+    isMobile = window.innerWidth <= 768;
 });
