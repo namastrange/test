@@ -127,23 +127,23 @@ def generate_hihat(duration=0.08, closed=True, accent=False):
     return hihat * volume
 
 def generate_tabla_ge(pitch=200, duration=0.3):
-    """Generate tabla 'ge' sound (bass stroke)"""
+    """Generate tabla 'ge' sound (bass stroke) - less tonal version"""
     t = np.linspace(0, duration, int(SAMPLE_RATE * duration), False)
 
-    # Pitched component with pitch bend
+    # Much less pitched, more percussive
     pitch_env = pitch * (1 + 0.3 * np.exp(-t * 20))
     phase = np.cumsum(2 * np.pi * pitch_env / SAMPLE_RATE)
     tone = np.sin(phase)
 
-    # Add harmonics
-    tone += 0.3 * np.sin(2 * phase)
-    tone += 0.15 * np.sin(3 * phase)
+    # Heavy noise component
+    noise = np.random.randn(len(t))
 
-    # Membrane resonance
-    resonance = signal.butter(2, [pitch * 1.2, pitch * 2.0], 'bp', fs=SAMPLE_RATE, output='sos')
-    resonant = signal.sosfilt(resonance, np.random.randn(len(t)))
+    # Low-mid frequency noise for body
+    sos_low = signal.butter(2, [80, 400], 'bp', fs=SAMPLE_RATE, output='sos')
+    noise_filtered = signal.sosfilt(sos_low, noise)
 
-    tabla = tone * 0.7 + resonant * 0.3
+    # Mix mostly noise with just a hint of tone
+    tabla = tone * 0.15 + noise_filtered * 0.85
 
     # Envelope
     env = np.exp(-t * 12)
@@ -152,22 +152,21 @@ def generate_tabla_ge(pitch=200, duration=0.3):
     return tabla * 0.3
 
 def generate_tabla_na(duration=0.15):
-    """Generate tabla 'na' sound (treble stroke)"""
+    """Generate tabla 'na' sound (treble stroke) - less tonal version"""
     t = np.linspace(0, duration, int(SAMPLE_RATE * duration), False)
 
-    # Higher pitched with more harmonics
+    # Mostly noise-based, minimal tone
     pitch = 450
     phase = 2 * np.pi * pitch * t
-    tone = np.sin(phase) * 0.5
-    tone += np.sin(2 * phase) * 0.3
-    tone += np.sin(3 * phase) * 0.2
+    tone = np.sin(phase) * 0.1  # Much quieter tone
 
-    # Add metallic noise
+    # Dominant noise component
     noise = np.random.randn(len(t))
-    sos = signal.butter(2, [1000, 5000], 'bp', fs=SAMPLE_RATE, output='sos')
+    sos = signal.butter(2, [800, 4000], 'bp', fs=SAMPLE_RATE, output='sos')
     noise = signal.sosfilt(sos, noise)
 
-    tabla = tone + noise * 0.4
+    # Mix with very little tone
+    tabla = tone * 0.1 + noise * 0.9
 
     # Sharp envelope
     env = np.exp(-t * 35)
@@ -228,17 +227,21 @@ def generate_clap(duration=0.1):
     return clap * 0.25
 
 def generate_cowbell(pitch=800, duration=0.2):
-    """Generate cowbell"""
+    """Generate cowbell - less tonal, more clicky version"""
     t = np.linspace(0, duration, int(SAMPLE_RATE * duration), False)
 
-    # Metallic tone with inharmonic partials
-    tone = np.sin(2 * np.pi * pitch * t)
-    tone += 0.5 * np.sin(2 * np.pi * pitch * 2.3 * t)
-    tone += 0.3 * np.sin(2 * np.pi * pitch * 3.7 * t)
+    # Metallic noise instead of pure tone
+    noise = np.random.randn(len(t))
 
-    # Band-pass for metallic character
-    sos = signal.butter(2, [600, 3000], 'bp', fs=SAMPLE_RATE, output='sos')
-    cowbell = signal.sosfilt(sos, tone)
+    # High-mid frequencies for metallic click
+    sos = signal.butter(3, [1200, 5000], 'bp', fs=SAMPLE_RATE, output='sos')
+    metallic = signal.sosfilt(sos, noise)
+
+    # Very brief tone component (just for attack)
+    tone = np.sin(2 * np.pi * pitch * t) * np.exp(-t * 40)
+
+    # Mix mostly noise with very brief tone at attack
+    cowbell = metallic * 0.85 + tone * 0.15
 
     # Sharp envelope
     env = np.exp(-t * 20)
